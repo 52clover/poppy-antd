@@ -7,6 +7,12 @@
         <a-menu-item key="create"> 创建接口 </a-menu-item>
         <a-menu-item key="list"> 接口列表 </a-menu-item>
       </a-sub-menu>
+      <a-sub-menu key="config">
+        <span slot="title">配置管理</span>
+        <a-menu-item key="project"> 项目配置 </a-menu-item>
+        <a-menu-item key="variable"> 变量配置 </a-menu-item>
+        <a-menu-item key="plugin"> 插件配置 </a-menu-item>
+      </a-sub-menu>
     </a-menu>
   </div>
 </template>
