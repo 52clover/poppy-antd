@@ -2,8 +2,9 @@
   <a-select
     v-model="owner"
     style="width: 120px"
-    @change="selectedTeam"
+    @change="selectedOwner"
     placeholder="请选择负责人"
+    size="small"
   >
     <a-select-option
       v-for="item in owners"
@@ -49,7 +50,7 @@ export default {
         }
       })
     },
-    selectOwner () {
+    selectedOwner () {
       this.$emit('selectedOwner', this.owner)
     }
   }

@@ -1,6 +1,11 @@
 <template>
   <div>
-    <a-select v-model="team" style="width: 120px" @change="selectedTeam">
+    <a-select
+      v-model="team"
+      @change="selectedTeam"
+      style="width: 120px"
+      size="small"
+    >
       <a-select-option
         v-for="item in teams"
         :key="item.value"
@@ -47,7 +52,7 @@ export default {
         this.$message.error(error.response.data.message)
       })
     },
-    selectTeam (value) {
+    selectedTeam (value) {
       this.team = value
       this.$emit('selectedTeam', this.team)
     }

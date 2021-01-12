@@ -1,25 +1,24 @@
 <template>
   <div>
-    <a-table :columns="columns" :data-source="data" bordered>
+    <a-table :columns="columns" :data-source="data" size="small" bordered>
       <template slot="title" slot-scope="">
         <a-row>
-          <a-col :span="6">
+          <a-col :span="3">
             <TeamSelector
               ref="teamSelector"
               v-on:selectedTeam="selectedTeam"
             />
           </a-col>
-          <a-col :span="6">
+          <a-col :span="3">
             <OwnerSelector
               ref="ownerSelector"
               v-on:selectedOwner="selectedOwner"
             />
           </a-col>
-          <a-col :span="6">
-            col-6
+          <a-col :span="16">
           </a-col>
-          <a-col :span="6">
-            col-6
+          <a-col :span="2">
+            <a-button @click="addDialogVisible=true" type="primary" size="small" icon="plus">添加</a-button>
           </a-col>
         </a-row>
       </template>
@@ -36,12 +35,10 @@
           {{ tag.toUpperCase() }}
         </a-tag>
       </span>
-      <span slot="action" slot-scope="record">
-        <a-button @click="add(record)" type="primary" size="small" icon="plus">添加</a-button>
+      <span slot="action">
+        <a-button @click="editDialogVisible=true" style="background-color: #faad14;" size="small" icon="edit">编辑</a-button>
         <a-divider type="vertical" />
-        <a-button style="background-color: #faad14;" size="small" icon="edit">编辑</a-button>
-        <a-divider type="vertical" />
-        <a-button type="danger" size="small" icon="delete">删除</a-button>
+        <a-button @click="deleteProjectHandle" type="danger" size="small" icon="delete">删除</a-button>
       </span>
     </a-table>
     <a-pagination
@@ -51,6 +48,44 @@
       show-size-changer
       @showSizeChange="onShowSizeChange"
     />
+    <a-modal
+      title="添加项目"
+      width="400px"
+      :visible="addDialogVisible"
+      @ok="addProjectHandleOk"
+      @cancel="addProjectHandleCancel"
+    >
+      <a-form :model="add" :label-col="{ span: 5 }" :wrapper-col="{ span: 17 }">
+        <a-form-item label="团队名称">
+          <a-input v-model="add.team" placeholder="请输入团队名称！" />
+        </a-form-item>
+        <a-form-item label="项目名称" size="small">
+          <a-input v-model="add.project" placeholder="请输入项目名称！" />
+        </a-form-item>
+        <a-form-item label="负责人">
+          <a-input v-model="add.owner" placeholder="请输入负责人名字！" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
+    <a-modal
+      title="编辑项目"
+      width="400px"
+      :visible="editDialogVisible"
+      @ok="editProjectHandleOk"
+      @cancel="editProjectHandleCancel"
+    >
+      <a-form :model="edit" :label-col="{ span: 5 }" :wrapper-col="{ span: 17 }">
+        <a-form-item label="团队名称">
+          <a-input v-model="edit.team" placeholder="请输入团队名称！" />
+        </a-form-item>
+        <a-form-item label="项目名称" size="small">
+          <a-input v-model="edit.project" placeholder="请输入项目名称！" />
+        </a-form-item>
+        <a-form-item label="负责人">
+          <a-input v-model="edit.owner" placeholder="请输入负责人名字！" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -109,6 +144,18 @@ export default {
       total: 0,
       pageNumber: 0,
       pageSize: 20,
+      addDialogVisible: false,
+      editDialogVisible: false,
+      add: {
+        team: '',
+        project: '',
+        owner: ''
+      },
+      edit: {
+        team: '',
+        project: '',
+        owner: ''
+      },
       columns
     }
   },
@@ -153,6 +200,52 @@ export default {
     selectedOwner (value) {
       this.owner = value
       this.refresh()
+    },
+    addProjectHandleCancel (e) {
+      this.addDialogVisible = false
+    },
+    addProjectHandleOk () {
+      this.$axios({
+        url: '/api/v1/team/create',
+        method: 'post',
+        data: JSON.stringify(this.add),
+        headers: {
+          'Content-Type': 'application/json;'
+        }
+      }).then((res) => {
+        this.add.team = {}
+        if (res.data.status === 0) {
+          this.refresh()
+          this.$message.success(res.data.message)
+          // 创建团队后下拉框不更新 #8 https://github.com/taoyanli0808/clover/issues/8
+          this.$refs.teamSelector.getTeam()
+          this.$refs.ownerSelector.getOwner()
+        } else {
+          this.$message.warning(res.data.message)
+        }
+      }).catch((error) => {
+        this.$message.error(error.response.data.message)
+      })
+      this.addDialogVisible = false
+    },
+    editProjectHandleCancel (e) {
+      this.editDialogVisible = false
+    },
+    editProjectHandleOk (e) {
+      console.log(e)
+      // this.editDialogVisible = true
+      // this.edit.team = row.team
+      // this.edit.project = row.project
+      // this.edit.owner = row.owner
+      // this.edit.id = row.id
+    },
+    deleteProjectHandle () {
+      this.$confirm({
+        title: '删除项目',
+        content: '此操作将永久删除该项目, 是否继续？',
+        onCancel () {},
+        onOk () {}
+      })
     }
   }
 }
